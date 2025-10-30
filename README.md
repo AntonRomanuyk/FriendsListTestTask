@@ -93,14 +93,40 @@ The tests are designed to run inside the Docker containers.
 ### Bot Tests (Telegram)
 
 1.  Make sure containers are running.
-2.  Execute `pytest`:
+2.  Install test dependencies inside the `bot` container (only needed once):
+    ```bash
+    docker-compose exec bot pip install pytest pytest-asyncio pytest-httpx
+    ```
+3.  Execute `pytest`:
     ```bash
     docker-compose exec bot pytest
     ```
 
 ---
 
-## 5. 🤖 How to Use the Telegram Bot
+## 5. ✨ Code Linting & Formatting (Ruff)
+
+This project uses [Ruff](https://docs.astral.sh/ruff/) for high-speed linting and formatting, configured in `pyproject.toml`.
+
+**To run it inside the Docker container (recommended):**
+
+1.  Make sure your containers are running.
+2.  Install Ruff inside the `api` container (only needed once):
+    ```bash
+    docker-compose exec api pip install ruff
+    ```
+3.  Run the linter to check for errors:
+    ```bash
+    docker-compose exec api ruff check .
+    ```
+4.  To automatically fix errors (like imports):
+    ```bash
+    docker-compose exec api ruff check . --fix
+    ```
+
+---
+
+## 6. 🤖 How to Use the Telegram Bot
 
 The bot starts automatically with `docker-compose up`. Just find your bot on Telegram and start sending commands:
 
@@ -111,7 +137,7 @@ The bot starts automatically with `docker-compose up`. Just find your bot on Tel
 
 ---
 
-## 6. 📖 API Endpoints
+## 7. 📖 API Endpoints
 
 You can test these manually via `http://localhost:8000/docs` or the provided `requests.http` file (requires the "REST Client" extension in VS Code).
 
@@ -159,11 +185,10 @@ curl http://localhost:8000/media/a1b2c3d4-e5f6.jpg
 
 ---
 
-## 7. 🏛️ Architecture Notes
+## 8. 🏛️ Architecture Notes
 
 This project runs in a Docker-internal network.
 * The **Bot** (`bot-1`) finds the **API** (`api-1`) using its service name: `http://api:8000` (this is set in `BACKEND_BASE_URL`).
 * The **API** (`api-1`) finds the **Database** (`db-1`) using its service name: `db` (this is set in `DATABASE_HOSTNAME`).
 * You (the user) access the API from your browser/Postman via `http://localhost:8000`.
 * Telegram's servers **cannot** access `http://api:8000`. This is why the bot must download photos itself (as bytes) and send them to Telegram, rather than sending the URL.
-```
